@@ -6,5 +6,11 @@ Used for working on trusts
 
 install_github("bcrossman/asbestosbwc")
 
+## Functions
+
+### interp_date_data
+
+Need to extend to cover cumulative inputs (like quarterly payments)
+
 
 

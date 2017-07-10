@@ -5,7 +5,7 @@
 \title{Interpolate Missing Data Linearly by Date}
 \usage{
 interp_date_data(x, date_var = "date", val_var = "total",
-  type = "quarterly")
+  frequency = "quarterly", type = "linear")
 }
 \arguments{
 \item{x}{A Data Frame with a date variable and a value variable}
@@ -14,10 +14,13 @@ interp_date_data(x, date_var = "date", val_var = "total",
 
 \item{val_var}{the name, as a string, of the value variable}
 
-\item{type}{either "quarterly", "monthly" or "daily"}
+\item{frequency}{either "quarterly", "monthly" or "daily"}
+
+\item{type}{either "spline" or "linear"}
 }
 \description{
 This function takes in a data frame and column names (as strings) and returns a new data frame with interpolated data.
 The frequency of the interpolated date can be specified
+Lastly, if the date variable is numeric, it assumes it is a year and switches to the end of the year for a date
 Can also be useful for cutting data down even if interpolation is note required.
 }
