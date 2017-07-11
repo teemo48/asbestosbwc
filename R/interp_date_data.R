@@ -9,25 +9,39 @@
 #' @param val_var the name, as a string, of the value variable
 #' @param frequency either "quarterly", "monthly" or "daily"
 #' @param type either "spline" or "linear"
+#' @param cumulative whether the value needs to be summed in order to be interpolated
 #'
 #' @export
 #'
 
-interp_date_data <- function(x, date_var="date", val_var="total", frequency="quarterly", type="linear"){
+interp_date_data <- function(x, date_var="date", val_var="total", frequency="quarterly",
+                             type="linear", cumulative=F){
 
   #x <- filter(input_df, trust=="Bondex")
-  #date_var="date"
-  #val_var="total"
+  #date_var="year"
+  #val_var="payments"
   #type="spline"
   #frequency="quarterly"
   #x <- arpc_assets
+  #x <- cashflow
+  #type <- "linear"
+  #cumulative=T
 
   #X should be a data frame with a date and a value variable with missing data
   if(nrow(x)<2){return(
     data.frame(date_var=x[[date_var]],val_var=x[[val_var]],"interp"=NA))}
 
   if(class(x[[date_var]])=="numeric"){
+    if(cumulative==T){
+    first_date <- as.Date(paste(x[1,date_var]-1, 12, 31,sep="-"), "%Y-%m-%d")
+    list_dates <- as.Date(paste(x[[date_var]], 12, 31,sep="-"), "%Y-%m-%d")
+    df <- data.frame("x" = c(first_date,list_dates),"y" = c(0,x[[val_var]]))
+    names(df) <- c(date_var,val_var)
+    x <- df
+    }
+    if(cumulative==F){
     x[[date_var]] <- as.Date(paste(x[[date_var]], 12, 31,sep="-"), "%Y-%m-%d")
+    }
   }
 
   date <-
@@ -40,7 +54,15 @@ interp_date_data <- function(x, date_var="date", val_var="total", frequency="qua
   #create key to know if it was actual or interpolated
   x$interp <- "Actual"
 
+  if(cumulative==T){
+    x %<>%
+      mutate(y = cumsum(.data[[val_var]]))
+    x[[val_var]] <- x$y
+    x$y <- NULL
+  }
+
   interp_base <- left_join(date,x)
+
 
   ##Linear
   if(type=="linear"){
@@ -75,6 +97,7 @@ interp_date_data <- function(x, date_var="date", val_var="total", frequency="qua
     interp_base[is.na(interp_base[[val_var]]), val_var] <- n_int
   }
 
+
   interp_base$interp[is.na(interp_base$interp)] <- "Interpolated"
   #interp_base$trust[is.na(interp_base$trust)] <- interp_base$trust[1]
 
@@ -100,6 +123,12 @@ interp_date_data <- function(x, date_var="date", val_var="total", frequency="qua
   if(frequency=="daily"){
     final_interp <- interp_base
   }
+  #Get change in cumulative
+
+  if(cumulative==T){
+    final_interp[[val_var]] <- final_interp[[val_var]]-lag(x = final_interp[[val_var]],
+                                                           n = 1,
+                                                           default = 0)}
 
   return(final_interp)
 }
