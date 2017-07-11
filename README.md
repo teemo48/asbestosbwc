@@ -10,7 +10,7 @@ install_github("bcrossman/asbestosbwc")
 
 ### interp_date_data
 
-Need to extend to cover cumulative inputs (like quarterly payments)
+
 
 
 
